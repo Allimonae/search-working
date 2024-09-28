@@ -201,46 +201,68 @@ def is_cycle(node, k=30):
 
 """Other Search Algorithms"""
 
-def breadth_first_search(problem):
+def breadth_first_search(problem): # modified
     "Search shallowest nodes in the search tree first."
     node = Node(problem.initial)
+
     if problem.is_goal(problem.initial):
-        return node
+        return [node.state] # return path if goal is reached
+    
     frontier = FIFOQueue([node])
     reached = {problem.initial}
+
     while frontier:
-        node = frontier.pop()
-        for child in expand(problem, node):
+        node = frontier.pop() # get node from frontier
+
+        for child in expand(problem, node): # expand node
             s = child.state
-            if problem.is_goal(s):
-                return child
+
+            if problem.is_goal(s): # check if child is goal
+                # reconstruct path to goal
+                path = []
+                curr = child
+                while curr is not None: # backtrack through parents
+                    path.insert(0, curr.state) # prepend curr state
+                    curr = curr.parent
+                print("Breadth First Search Path:", path)
+                return child 
+            
             if s not in reached:
                 reached.add(s)
                 frontier.appendleft(child)
+
+    print("No path found")
     return failure
 
 
 def iterative_deepening_search(problem):
     "Do depth-limited search with increasing depth limits."
     for limit in range(1, sys.maxsize):
-        result = depth_limited_search(problem, limit)
-        if result != cutoff:
-            return result
+        path = depth_limited_search(problem, limit)
+        if path != cutoff:
+            print("Iterative Deepening Search Path:", path)
+            return path
 
 
 def depth_limited_search(problem, limit=10):
     "Search deepest nodes in the search tree first."
     frontier = LIFOQueue([Node(problem.initial)])
     result = failure
+
     while frontier:
         node = frontier.pop()
+        # initialize path
+        path = []
         if problem.is_goal(node.state):
-            return node
+            path.append(node.state)
+            print("Depth Limited Search Path: ", path)
+            return path
         elif len(node) >= limit:
             result = cutoff
         elif not is_cycle(node):
             for child in expand(problem, node):
-                frontier.append(child)
+                current_path = path + [node.state]
+                frontier.append(Node(child.state))
     return result
 
 
@@ -408,10 +430,11 @@ r1 = RouteProblem('A', 'B', map=romania)
 r2 = RouteProblem('N', 'L', map=romania)
 r3 = RouteProblem('E', 'T', map=romania)
 r4 = RouteProblem('O', 'M', map=romania)
+r5 = RouteProblem('X', 'A', map=romania)
 
-path_states(uniform_cost_search(r1)) # Lowest-cost path from Arab to Bucharest
+# path_states(uniform_cost_search(r1)) # Lowest-cost path from Arab to Bucharest
 
-path_states(breadth_first_search(r1)) # Breadth-first: fewer steps, higher path cost
+# path_states(breadth_first_search(r1)) # Breadth-first: fewer steps, higher path cost
 
 """Grid Problems"""
 
@@ -479,8 +502,10 @@ d5 = GridProblem(obstacles=random_lines(N=300) | frame)
 d6 = GridProblem(obstacles=cup | frame)
 d7 = GridProblem(obstacles=cup | frame | line(50, 35, 0, -1, 10) | line(60, 37, 0, -1, 17) | line(70, 31, 0, -1, 19))
 
-def __main__():
-    shortest_path_bfs = breadth_first_search(RouteProblem)
+def main():
+    path_bfs = breadth_first_search(r5)
+    path_ids = iterative_deepening_search(r5)
+
     
 if __name__ == "__main__":
     main()

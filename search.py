@@ -1246,9 +1246,7 @@ class NQueensProblem(Problem):
     """
 
     def __init__(self, N):
-        # Generate a random initial state with one queen per column
-        initial_state = tuple(random.randint(0, N - 1) for _ in range(N))
-        super().__init__(initial_state)
+        super().__init__(tuple([-1] * N))
         self.N = N
 
     def actions(self, state):
@@ -1286,22 +1284,16 @@ class NQueensProblem(Problem):
         return not any(self.conflicted(state, state[col], col)
                        for col in range(len(state)))
 
-    def h(self, state):
-        """Return number of conflicting queens for a given state"""
+    def h(self, node):
+        """Return number of conflicting queens for a given node"""
         num_conflicts = 0
-        for (r1, c1) in enumerate(state):
-            if c1 == -1:  # Skip unfilled columns
-                continue
-            for (r2, c2) in enumerate(state):
-                if (r1, c1) != (r2, c2) and c2 != -1:  # Ensure we don't compare with -1
+        for (r1, c1) in enumerate(node.state):
+            for (r2, c2) in enumerate(node.state):
+                if (r1, c1) != (r2, c2):
                     num_conflicts += self.conflict(r1, c1, r2, c2)
 
         return num_conflicts
-
-    def value(self, state):
-        """Return the negative of the number of conflicts as a heuristic value."""
-        return -self.h(state)
-
+    
 # ______________________________________________________________________________
 # Inverse Boggle: Search for a high-scoring Boggle board. A good domain for
 # iterative-repair and related search techniques, as suggested by Justin Boyan.
